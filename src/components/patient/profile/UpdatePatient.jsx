@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
@@ -13,8 +14,12 @@ import * as z from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { format } from 'date-fns';
 import { countryCodes } from '@/lib/countryCodes';
+import { useLocation } from 'react-router-dom';
 
-const patientSchema = z.object({
+const UpdatePatient = () => {
+  const location = useLocation();
+  const { PatientData } = location.state || {};  
+  const patientSchema = z.object({
   first_name: z.string().min(2, "First name is required"),
   last_name: z.string().optional(),
   email: z.string().email("Invalid email address").optional().or(z.literal('')),
@@ -26,26 +31,25 @@ const patientSchema = z.object({
   dob: z.string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format")
     .refine((date) => {
-      if (!date) return true; // Allow empty string
+      if (!date) return true; 
       const parsedDate = new Date(date);
-      return !isNaN(parsedDate.getTime()); // Check if it's a valid date
+      return !isNaN(parsedDate.getTime()); 
     }, {
       message: "Invalid date. Please enter a valid date in YYYY-MM-DD format."
     })
     .optional()
     .or(z.literal('')),  
   guardian_name: z.string().optional(),
-  therapist_primary: z.string().uuid("Invalid therapist ID").optional().or(z.literal('')),
+  therapist_primary: z.string().uuid("Invalid therapist ID").optional().or(z.literal('')).or(z.null()),
   priority: z.number().int().min(1).max(10),
+  is_patient_active:z.boolean(),
 });
-
-const NewPatient = () => {
   const navigate = useNavigate();
-  const { clinic_id } = useParams();
+  const { clinic_id,patient_id } = useParams();
   const { toast } = useToast();
   const { authenticatedFetch } = useAuth();
   const [therapists, setTherapists] = useState([]);
-  const [isSubmitting, setIsSubmitting] = useState(false); // Track submission state
+  const [isSubmitting, setIsSubmitting] = useState(false); 
 
   const form = useForm({
     resolver: zodResolver(patientSchema),
@@ -62,14 +66,34 @@ const NewPatient = () => {
       guardian_name: "",
       therapist_primary: "",
       priority: 9,
+      is_patient_active:true,
     },
   });
-
   useEffect(() => {
-    fetchTherapists();
-  }, []);
-
-  const fetchTherapists = async () => {
+  fetchTherapists();
+  fetchPatient();
+ }, []);
+ const fetchPatient = async () => {
+  try {
+    form.reset({
+      ...PatientData,
+      country_code: PatientData.mobile?.slice(0, 3) || "+91",
+      mobile: PatientData.mobile?.slice(3) || "",
+      country_code_alternate: PatientData.mobile_alternate?.slice(0, 3) || "+91",
+      mobile_alternate: PatientData.mobile_alternate?.slice(3) || "",
+      therapist_primary: PatientData.therapist_primary || "",
+      dob: PatientData.dob || "",
+      is_patient_active: PatientData.is_patient_active !== undefined ? PatientData.is_patient_active : false,
+    });
+  } catch (error) {
+    toast({
+      title: "Error",
+      description: "Failed to fetch patient details. Please try again.",
+      variant: "destructive",
+    });
+  }
+};
+const fetchTherapists = async () => {
     try {
       const response = await authenticatedFetch(`${import.meta.env.VITE_BASE_URL}/api/emp/clinic/${clinic_id}/employee/`);
       if (!response.ok) throw new Error('Failed to fetch therapists');
@@ -84,7 +108,6 @@ const NewPatient = () => {
       });
     }
   };
-
   const onSubmit = async (values) => {
     setIsSubmitting(true);
     const submitData = {
@@ -93,39 +116,38 @@ const NewPatient = () => {
       mobile_alternate: values.mobile_alternate ? `${values.country_code_alternate}${values.mobile_alternate}` : null,
       dob: values.dob || null,
       has_app_access: true,
-      is_active: true,
       email_alternate: null,
+      therapist_primary: values.therapist_primary ? values.therapist_primary : null,
       priority: 9,
     };
-
     try {
-      const response = await authenticatedFetch(`${import.meta.env.VITE_BASE_URL}/api/emp/clinic/${clinic_id}/patient/`, {
-        method: 'POST',
+      const response = await authenticatedFetch(`${import.meta.env.VITE_BASE_URL}/api/emp/clinic/${clinic_id}/patient/${patient_id}`, {
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(submitData),
       });
-
+      console.log(response);
       if (!response.ok) {
         let err
         const errData = await response.json()
         if(errData.mobile){
           err = errData.mobile[0]
         }
-        throw new Error(err || "Failed to add patient");
+        if(errData.email){
+          err=errData.email[0]
+        }
+        throw new Error(err || "Failed to update patient");
       }
-
-      const newPatient = await response.json();
       toast({
         title: "Success",
-        description: `New patient ${newPatient.first_name} ${newPatient.last_name} has been added.`,
+        description: `updation of  patient Done scuccesfully.`,
       });
-      navigate(`/clinic/${clinic_id}/patients`);
+      navigate(`/clinic/${clinic_id}/patients/${patient_id}`);
     } catch (error) {
       toast({
-        title: "Error",
-        description: error.message || "Failed to add patient. Please try again.",
+        description: error.message || "Failed to Update patient. Please try again.",
         variant: "destructive",
       });
     }
@@ -137,9 +159,24 @@ const NewPatient = () => {
   return (
     <Card className="w-full max-w-4xl mx-auto mt-8">
       <CardContent className="pt-6">
-        <h2 className="text-2xl font-bold mb-6 text-center">Add Patient</h2>
+        <h2 className="text-2xl font-bold mb-6 text-center">Update Patient</h2>
         <Form {...form}>
+   
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <FormField
+              control={form.control}
+              name="is_patient_active"
+              render={({ field }) => (
+            <FormItem>
+            <FormLabel></FormLabel>
+            <Switch
+             checked={field.value}
+             onCheckedChange={field.onChange}
+           />
+          <span className="ml-2">{field.value ? "Active" : "Inactive"}</span>
+          </FormItem>
+          )}
+          />
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-6">
                 <h3 className="font-semibold">Personal details</h3>
@@ -359,7 +396,7 @@ const NewPatient = () => {
               </div>
             </div>
             <Button type="submit" disabled={isSubmitting}>
-                   {isSubmitting ? "Adding Ptaient..." : "Add Patient"}
+                   {isSubmitting ? "Updating Ptaient..." : "Update Patient"}
             </Button>
           </form>
         </Form>
@@ -368,4 +405,4 @@ const NewPatient = () => {
   );
 };
 
-export default NewPatient;
+export default UpdatePatient;
