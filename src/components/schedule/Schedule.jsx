@@ -20,6 +20,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { PlusCircle, Search, EyeOff, Eye, X } from "lucide-react";
 import { Card } from '../ui/card';
 import { useToast } from "@/components/ui/use-toast";
+import {ToastProvider, ToastViewport, Toast, ToastTitle, ToastDescription, ToastClose, ToastAction } from "@/components/ui/toast";
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { parseISO, addMinutes, addDays, addMonths } from 'date-fns';
@@ -859,12 +860,31 @@ export default function Schedule() {
         customDuration: '',
         therapist: '',
       });
-      toast({
-        title: "Success",
-        description: "Appointment booked successfully.",
-        variant: "default",
-      });
+      // toast({
+      //   title: "Success",
+      //   description: "Appointment booked successfully.",
+      //   variant: "default",
+      // });
       setIsPreview(false);
+      toast({
+        title: "Appointment booked successfully!!",
+        description: "Want to extend your Appointment?",
+        action: (
+          <ToastAction altText="Add appointment" onClick={() => {
+            const now = new Date();
+            setNewVisit(prev => ({
+              ...prev,
+              patient: newVisit.patient,
+              therapist: newVisit.therapist,
+              sellable: newVisit.sellable,
+              date: now,
+              time: format(now, 'HH:mm'),
+            }));
+            handleDialogOpenChange(true);
+          }} >Add appointment</ToastAction>
+        ),
+      });
+      
     } catch (error) {
       toast({
         title: "Error",
@@ -875,7 +895,7 @@ export default function Schedule() {
   };
 
   const handlePreviewDialog= (open) => {
-    setIsPreview(open); // Update the dialog state
+    setIsPreview(open); // Update the preview dialog state
   };
 
   const handleDialogOpenChange = (open) => {
