@@ -63,6 +63,7 @@ export default function Schedule() {
   });
   const [selectedDoctor, setSelectedDoctor] = useState('');
   const [isRescheduling, setIsRescheduling] = useState(false);
+  const [isPreview, setIsPreview] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState('');
   const [showCanceled, setShowCanceled] = useState(false);
   const [calendarStartTime, setCalendarStartTime] = useState(new Date(0, 0, 0, 9, 0));
@@ -445,6 +446,7 @@ export default function Schedule() {
     setIsRescheduling(true);
     setIsVisitDialogOpen(true);
   };
+
   
   // Then, create a separate function to handle the actual rescheduling
   const submitReschedule = async () => {
@@ -523,7 +525,7 @@ export default function Schedule() {
           attended: false,
         });
         setIsRescheduling(false);
-        setIsVisitDialogOpen(false);
+        setIsPreview(false);
         toast({
           title: "Success",
           description: "Appointment rescheduled successfully.",
@@ -862,7 +864,7 @@ export default function Schedule() {
         description: "Appointment booked successfully.",
         variant: "default",
       });
-      setIsVisitDialogOpen(false);
+      setIsPreview(false);
     } catch (error) {
       toast({
         title: "Error",
@@ -870,6 +872,10 @@ export default function Schedule() {
         variant: "destructive",
       });
     }
+  };
+
+  const handlePreviewDialog= (open) => {
+    setIsPreview(open); // Update the dialog state
   };
 
   const handleDialogOpenChange = (open) => {
@@ -892,6 +898,11 @@ export default function Schedule() {
         therapistName: '',
       });
     }
+  };
+
+  const handlePreview = (open) => {
+    setIsPreview(open);
+    setIsVisitDialogOpen(false);
   };
 
   const handleDoctorFilterChange = (doctorId) => {
@@ -1829,9 +1840,35 @@ export default function Schedule() {
               />
             )}
           </div>
-          <Button onClick={isRescheduling ? submitReschedule : addVisit} className="w-full">
-            {isRescheduling ? 'Reschedule Appointment' : 'Book Appointment'}
+          <Button onClick={handlePreview} className="w-full">
+            Add Appointment
           </Button>
+        </DialogContent>
+      </Dialog>
+
+      {/* <Button onClick={isRescheduling ? submitReschedule : addVisit} className="w-full">
+            {isRescheduling ? 'Reschedule Appointment' : 'Book Appointment'}
+          </Button> */}
+
+      <Dialog open={isPreview} onOpenChange={handlePreviewDialog}>
+        <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
+        <Label>Patient:</Label>
+        <Label>Therapist</Label>
+        <Label>Sellable</Label>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+        <Label>Starts On</Label>
+        <Label>Time</Label>
+        </div>
+        <Label>Weekdays</Label>
+        <Label>Ends On</Label>
+        <Label>OR</Label>
+        <Label>Duration</Label>
+        <div className="flex justify-between items-center gap-4 w-full" style={{ width: '100%' }}>
+          <Button className="w-full">Edit Appointment</Button>
+          <Button onClick={isRescheduling ? submitReschedule : addVisit} className="w-full">
+            {isRescheduling ? 'Confirm Reschedule Appointment' : 'Confirm Appointment'}
+          </Button>
+        </div>
         </DialogContent>
       </Dialog>
     </Card>
