@@ -1530,32 +1530,38 @@ export default function Schedule() {
               </button>
             )}
           </div>
-          <ScrollArea className="flex-grow overflow-y-auto pr-4">
-            <Toggle
-              pressed={!selectedDoctorId && !selectedPatientId}
-              onPressedChange={clearAllFilters}
-              className="mb-4 w-full"
-            >
-              {selectedDoctorId === "" && selectedPatientId === "" ? "Apply Filter" : "Clear All Filters" }
-            </Toggle>
-            <Toggle 
-              pressed={showCancelled} 
-              onPressedChange={handleCancelledToggle} 
-              className="w-full"
-            >
-                {showCancelled ? "Hide Cancelled" : "View Cancelled"}
+          <Toggle
+            pressed={!selectedDoctorId && !selectedPatientId}
+            onPressedChange={clearAllFilters}
+            className="mb-4 w-full p-4"
+          >
+            {selectedDoctorId === "" && selectedPatientId === "" ? "Apply Filter" : "Clear All Filters"}
+          </Toggle>
+          <Toggle
+            pressed={showCancelled}
+            onPressedChange={handleCancelledToggle}
+            className="w-full p-4"
+          >
+            Show Cancelled
+          </Toggle>
 
-            </Toggle>
-            
-              <h1 className='font-bold text-lg mb-2'>Doctors</h1>
+          <ScrollArea className="flex-grow overflow-y-auto pr-4">
+            <h1 className='font-bold text-lg mb-2'>Doctors</h1>
               <div className="relative mb-2">
-                <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                {/* <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
                   type="text"
                   placeholder="Search doctors..."
                   value={doctorSearch}
                   onChange={(e) => setDoctorSearch(e.target.value)}
                   className="pl-8"
+                /> */}
+                <SearchableSelect
+                  placeholder="Select Doctors"
+                  options={therapists}
+                  value={doctorSearch}
+                  onValueChange={(e) => setDoctorSearch(e.target.value)}
+                  searchPlaceholder="Search Doctors..."
                 />
               </div>
               <div className="flex flex-col gap-2 mb-4">
@@ -1887,6 +1893,9 @@ export default function Schedule() {
 
       <Dialog open={isPreview} onOpenChange={handlePreviewDialog}>
         <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle style={{ marginBottom: '1rem' }}> Appointment Preview </DialogTitle>
+          </DialogHeader>
           <div>
             <Label>Patient: </Label>
             <span style={{ color: '#555' }}>
@@ -1921,7 +1930,7 @@ export default function Schedule() {
         </div>
         <div>
           <Label>Weekdays: </Label>
-          <span style={{ color: '#555' }}>{newVisit.weekdays? newVisit.weekdays.join(', ') : 'N/A'}</span>
+          <span style={{ color: '#555' }}>{newVisit.weekdays && newVisit.weekdays.length > 0 ? newVisit.weekdays.join(', ') : 'Not set'}</span>
         </div>
         <div>
           <Label>Ends On: </Label>
@@ -1934,7 +1943,7 @@ export default function Schedule() {
         
         <div>
         <Label>Duration: </Label>
-        {newVisit.duration? newVisit.duration : newVisit.customDuration} mins
+        <span style={{ color: '#555' }}>{newVisit.duration? newVisit.duration : newVisit.customDuration} mins </span>
         </div>
         
         <div className="flex justify-between items-center gap-4 w-full" style={{ width: '100%' }}>
