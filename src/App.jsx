@@ -9,6 +9,7 @@ import './App.css';
 import './index.css';
 import { LoaderIcon } from "lucide-react"
 import UpdatePatient from './components/patient/profile/UpdatePatient';
+import NotificationPage from './components/Notification/page';
 
 // Lazy load components
 const Home = lazy(() => import('./components/Home'));
@@ -53,6 +54,13 @@ function App() {
                 <Dashboard />
               </ProtectedRoute>
             } />
+            <Route path="/clinic/notification" element={
+              <ProtectedRoute>
+                <Navbar />
+                <NotificationPage />
+              </ProtectedRoute>
+            } />
+
             <Route path="/clinic/:clinic_id/schedule" element={
               <ProtectedRoute>
                 <Navbar />

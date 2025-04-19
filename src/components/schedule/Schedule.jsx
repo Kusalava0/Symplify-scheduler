@@ -1249,7 +1249,7 @@ export default function Schedule() {
 
   useEffect(() => {
     updateAppointmentCounts(events);
-  }, [events]);
+  }, [events]); 
 
   // const formattedFilteredEvents = filteredEvents.map(event => ({
   //   id: event.id,

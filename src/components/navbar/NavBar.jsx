@@ -7,7 +7,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useAuth } from '../../contexts/AuthContext';
 import logo from "../../assets/logo_ai 2.svg";
 import { Card } from '../ui/card';
-import { ChevronRight, LogOut } from 'lucide-react';
+import { BellRing, ChevronRight, LogOut } from 'lucide-react';
+import Notification from '../Notification/page';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ const Navbar = () => {
   const [clinicName, setClinicName] = useState('');
   const [employeeName, setEmployeeName] = useState('');
   const [patientName, setPatientName] = useState('');
+  const [shownotification, setShowNotification] = useState(false);
 
   const { clinic_Id } = useParams();
 
@@ -150,31 +152,42 @@ const Navbar = () => {
 
         <div className="ml-4">
         {pathName.endsWith('/clinic') ? (
-            <Button onClick={logout}> Logout <LogOut className='w-4 h-4 ml-2' /> </Button>
-          ) : (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Avatar className="h-8 w-8 text-center text-primary">
-                  <AvatarFallback>{user?.first_name[0]}</AvatarFallback>
-                </Avatar>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => navigate(`/clinic/${clinicId}/profile`)}>
-                  Profile
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate(`/clinic/${clinicId}/settings`)}>
-                  Settings
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={logout}>
-                  Logout
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-         </div>
+          <div className='flex items-center gap-16'>
+            <BellRing className="w-7 h-8 cursor-pointer text-muted-foreground hover:text-primary" 
+            onClick={() =>navigate(`/clinic/notification`)}
+            />
+            <Button onClick={logout}>
+            Logout <LogOut className="w-4 h-4 ml-2" />
+          </Button>
+
+          </div>
+  
+    ) : (
+    
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+        <Avatar className="h-10 w-10 cursor-pointer">
+          <AvatarFallback>{user?.first_name[0]}</AvatarFallback>
+        </Avatar>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => navigate(`/clinic/${clinicId}/profile`)}>
+          Profile
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => navigate(`/clinic/${clinicId}/settings`)}>
+          Settings
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={logout}>
+          Logout
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+      </DropdownMenu>
+
+  )}
+    </div>
       </div>
     </Card>
   );
 };
 
-export default Navbar;
+export default Navbar;git add package-lock.json
