@@ -33,6 +33,7 @@ import { Progress } from '@/components/ui/progress';
 import ClockPicker from '@/components/ui/clock';
 import { avatarClasses } from '@mui/material';
 // import SearchDropdown from '@/components/ui/SearchDropdown';
+import { useLocation } from 'react-router-dom';
 
 const locales = {
   'en-US': enUS,
@@ -113,6 +114,27 @@ export default function Schedule() {
   const [isVisible, setIsVisible] = useState(false);
   const [bookedVisits, setBookedVisits] = useState([])
   const [visits, setVisits] = useState([])
+  
+
+  const location = useLocation();
+  const { appointmentDate: appointmentDateFromState, clinic_id: clinicIdFromState } = location.state || {};
+  
+  useEffect(() => {
+    if (appointmentDateFromState && clinicIdFromState) {
+      const parsedDate = new Date(appointmentDateFromState);
+      if (!isNaN(parsedDate)) {
+        setDate(parsedDate);
+        setView('day');
+      }
+    }
+  }, [appointmentDateFromState]);
+
+
+    useEffect(() => {
+      if (date && view && clinicIdFromState) {
+        fetchBookings();
+      }
+    }, [date, view, selectedDoctorId, clinicIdFromState]);
 
 
   const filteredTherapists = therapists.filter(therapist => 
@@ -375,10 +397,13 @@ export default function Schedule() {
 
       const timeFrom = formatDateForAPI(viewStart);
       const timeTo = formatDateForAPI(viewEnd);
+
+      
   
       const url = new URL(`${import.meta.env.VITE_BASE_URL}/api/emp/clinic/${clinic_id}/patient/${patientId}/booking/`);
       url.searchParams.append('time_from', timeFrom);
       url.searchParams.append('time_to', timeTo);
+      console.log("url_Schedule",url)
   
       const response = await authenticatedFetch(url.toString());
   
@@ -387,6 +412,7 @@ export default function Schedule() {
       }
   
       const data = await response.json();
+      console.log("data",data);
   
       const formattedEvents = data.map(booking => ({
         id: booking.id,
@@ -1060,7 +1086,6 @@ export default function Schedule() {
   };
 
   const handleSelectEvent = (event) => {
-    console.log(event)
     setSelectedEvent(event);
   };
 
@@ -1481,6 +1506,7 @@ export default function Schedule() {
               Add Appointment
             </Button>
           </div>
+
           <div className="mb-4 flex-shrink-0">
             <div className='flex gap-4 justify-between items-center'>
               <Label htmlFor="startTime">From</Label>

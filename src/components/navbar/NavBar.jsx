@@ -8,7 +8,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import logo from "../../assets/logo_ai 2.svg";
 import { Card } from '../ui/card';
 import { BellRing, ChevronRight, LogOut } from 'lucide-react';
-import Notification from '../Notification/page';
+
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -153,7 +153,7 @@ const Navbar = () => {
         <div className="ml-4">
         {pathName.endsWith('/clinic') ? (
           <div className='flex items-center gap-16'>
-            <BellRing className="w-7 h-8 cursor-pointer text-muted-foreground hover:text-primary" 
+            <BellRing className="w-4 h-8 cursor-pointer text-muted-foreground hover:text-primary" 
             onClick={() =>navigate(`/clinic/notification`)}
             />
             <Button onClick={logout}>
@@ -163,25 +163,30 @@ const Navbar = () => {
           </div>
   
     ) : (
-    
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-        <Avatar className="h-10 w-10 cursor-pointer">
-          <AvatarFallback>{user?.first_name[0]}</AvatarFallback>
-        </Avatar>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => navigate(`/clinic/${clinicId}/profile`)}>
-          Profile
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate(`/clinic/${clinicId}/settings`)}>
-          Settings
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={logout}>
-          Logout
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-      </DropdownMenu>
+      <div className='flex items-center gap-10'>
+          <BellRing className="w-7 h-8 cursor-pointer text-muted-foreground hover:text-primary" 
+            onClick={() =>navigate(`/clinic/notification`)}
+          />
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+          <Avatar className="h-10 w-10 cursor-pointer">
+            <AvatarFallback>{user?.first_name[0]}</AvatarFallback>
+          </Avatar>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={() => navigate(`/clinic/${clinicId}/profile`)}>
+            Profile
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate(`/clinic/${clinicId}/settings`)}>
+            Settings
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={logout}>
+            Logout
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+      
 
   )}
     </div>
